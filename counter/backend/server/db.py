@@ -51,3 +51,27 @@ def get_history(db_name):
 
     return results
 
+
+def get_last_image(db_name):
+    try:
+        connection = sqlite3.connect(db_name)
+        connection.row_factory = sqlite3.Row
+        connection.text_factory = bytes
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT image FROM person_count ORDER BY id DESC LIMIT 1;"
+        )
+        results = cursor.fetchall()
+        connection.close
+        im = results[0]["image"]
+
+    except sqlite3.Error as error:
+        print("Failed to insert blob data into sqlite table", error)
+
+    finally:
+        if connection:
+            connection.close()
+
+    return im 
+
+

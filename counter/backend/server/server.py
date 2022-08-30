@@ -9,9 +9,12 @@
     See the LICENSE file in the project root for more information.
 """
 
-from db import initialize_databese, get_history
+from db import initialize_databese, get_history, get_last_image
 from flask import Flask
 import json
+import numpy as np
+import base64
+
 
 app = Flask(__name__)
 app.config.from_pyfile("config.cfg")
@@ -27,6 +30,15 @@ def history():
         results.append({"date": record[2], "count": record[1]})
 
     return json.dumps(results)
+
+
+@app.route("/last_image/", methods=["GET"])
+def last_image():
+    result = get_last_image(app.config["DB_PATH"])
+    data = base64.b64encode(result).decode('utf-8')
+    
+
+    return {"image": data}
 
 
 def main():

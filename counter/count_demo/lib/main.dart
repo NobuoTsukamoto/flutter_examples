@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:count_demo/time_series_count.dart';
 import 'package:flutter/material.dart';
@@ -57,12 +59,22 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   List<TimeSeriesCount> items = [];
+  Uint8List _imageBytes = Uint8List(0);
 
-  Future<void> _getHistory() async {
-    var response = await http.get(Uri.http('127.0.0.1:5000', 'history'));
+  Future<void> _getLastImage() async {
+    var imageResponse = await http.get(Uri.http('127.0.0.1:5000', 'last_image'));
+    String imageBase64 = json.decode(imageResponse.body)['image'];
+    _imageBytes = base64Decode(imageBase64);
 
     setState(() {
-      items = (json.decode(response.body) as List)
+      _imageBytes = base64Decode(imageBase64);
+    });
+  }
+
+  Future<void> _getHistory() async {
+    var historyResponse = await http.get(Uri.http('127.0.0.1:5000', 'history'));
+    setState(() {
+      items = (json.decode(historyResponse.body) as List)
           .map((i) => TimeSeriesCount.fromJson(i)).cast<TimeSeriesCount>()
           .toList();
     });
@@ -70,9 +82,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    super.initState();
-
     _getHistory();
+    _getLastImage();
+
+    super.initState();
   }
 
   Future<void> _incrementCounter() async {
@@ -102,9 +115,12 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
+        child: Image.memory(_imageBytes, errorBuilder: (c, o, s) {
+          return const Icon(Icons.error, color: Colors.red);
+        },)
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: SimpleTimeSeriesChart.withData(items),
+        // child: SimpleTimeSeriesChart.withData(items),
         //child: CustomAxisTickFormatters.withSampleData(),
       ),
 
