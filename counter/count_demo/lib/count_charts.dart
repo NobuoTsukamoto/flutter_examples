@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'time_series_count.dart';
@@ -34,6 +35,7 @@ class SimpleTimeSeriesChart extends StatelessWidget {
     charts.BasicNumericTickFormatterSpec.fromNumberFormat(
         NumberFormat.compactSimpleCurrency());
 
+
     /// Formatter for numeric ticks that uses the callback provided.
     ///
     /// Use this formatter if you need to format values that [NumberFormat]
@@ -43,19 +45,39 @@ class SimpleTimeSeriesChart extends StatelessWidget {
     // final customTickFormatter =
     //   charts.BasicNumericTickFormatterSpec((num value) => 'MyValue: $value');
 
-    return charts.TimeSeriesChart(seriesList,
+    return charts.TimeSeriesChart(
+        seriesList,
         animate: animate,
-
-        /// Customizes the date tick formatter. It will print the day of month
-        /// as the default format, but include the month and year if it
-        /// transitions to a new month.
-        ///
-        /// minute, hour, day, month, and year are all provided by default and
-        /// you can override them following this pattern.
+        primaryMeasureAxis: const NumericAxisSpec(
+            tickProviderSpec: BasicNumericTickProviderSpec(
+              zeroBound: true,
+              dataIsInWholeNumbers: true,
+              desiredTickCount: 6
+            ),
+            viewport: NumericExtents(0, 10),
+            renderSpec: GridlineRendererSpec(
+                lineStyle: charts.LineStyleSpec(
+                    thickness: 1,
+                ),
+                labelStyle: TextStyleSpec(
+                    fontSize: 18,
+                )
+            )
+        ),
         domainAxis: const charts.DateTimeAxisSpec(
             tickFormatterSpec: charts.AutoDateTimeTickFormatterSpec(
                 minute: charts.TimeFormatterSpec(
-                    format: 'm', transitionFormat: 'MM/dd/yyyy HH:mm'))));
+                    format: 'm',
+                    transitionFormat: 'MM/dd HH:mm'
+                )
+            ),
+            renderSpec: SmallTickRendererSpec(
+                labelStyle: TextStyleSpec(
+                    fontSize: 18,
+                )
+            )
+        )
+    );
   }
 
   /// Create one series with sample hard coded data.

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
@@ -5,6 +6,7 @@ import 'dart:typed_data';
 import 'package:count_demo/time_series_count.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:fl_chart/fl_chart.dart';
 
 import 'count_charts.dart';
 import 'custom_axis.dart';
@@ -82,8 +84,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    _getHistory();
-    _getLastImage();
+
+    Timer.periodic(
+      const Duration(seconds: 5),
+          (Timer timer) {
+        _getHistory();
+        _getLastImage();
+
+        setState(() {});
+      },
+    );
 
     super.initState();
   }
@@ -115,13 +125,28 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Image.memory(_imageBytes, errorBuilder: (c, o, s) {
-          return const Icon(Icons.error, color: Colors.red);
-        },)
+        child: Row(
+          children: <Widget>[
+            Container(
+                margin: const EdgeInsets.all(20),
+                child: Image.memory(
+                _imageBytes,
+                gaplessPlayback: true,
+                errorBuilder: (c, o, s) {
+                  return const Icon(Icons.error, color: Colors.red);
+                }
+            )
+            ),
+            Expanded(child: SimpleTimeSeriesChart.withData(items))
+
+          ],
+        )
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         // child: SimpleTimeSeriesChart.withData(items),
         //child: CustomAxisTickFormatters.withSampleData(),
+        //Image.memory(_imageBytes, gaplessPlayback: true, errorBuilder: (c, o, s) {
+        //return const Icon(Icons.error, color: Colors.red);
       ),
 
       floatingActionButton: FloatingActionButton(
