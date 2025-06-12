@@ -1,0 +1,15 @@
+server:
+  db_path: "/home/nobuo/WorkSpace/flutter/flutter_examples/counter/backend/db/counter.db"
+
+detector:
+  camera:
+    num: 0
+    width: 640
+    height: 480
+    fps: 30
+
+  model:
+    model_path: "/home/nobuo/WorkSpace/flutter/flutter_examples/counter/backend/detector/models/efficientdet-lite4_fp32.tflite"
+    num_threads: 4
+    score_threshold: 0.5
+    count_labels: [0]

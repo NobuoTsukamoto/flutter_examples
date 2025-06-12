@@ -13,7 +13,7 @@
 import argparse
 import os
 import sqlite3
-from datetime import datetime
+import datetime
 
 import cv2
 import numpy as np
@@ -163,22 +163,25 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
     cap.set(cv2.CAP_PROP_FPS, camera_fps)
 
-    dt_now = datetime.now()
-    iter = croniter("*/1 * * * *", dt_now)
-    exec_time = iter.get_next(datetime)
+    dt_now = datetime.datetime.now()
+    exec_time = dt_now + datetime.timedelta(seconds=10)
     print(exec_time)
 
     while cap.isOpened():
         _, frame = cap.read()
 
-        dt_now = datetime.now()
+        dt_now = datetime.datetime.now()
         if dt_now > exec_time:
+            print(dt_now)
+
             im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             resize_im = cv2.resize(im, (width, height))
             set_input_tensor(interpreter, resize_im)
 
             interpreter.invoke()
             objs = get_output(interpreter, score_threshold)
+
+            im = np.zeros((camera_height, camera_width, 3), np.uint8)
 
             num_results = 0
             # Display result.
@@ -196,19 +199,19 @@ def main():
                     ymax = int(ymax * camera_height)
 
                     # Draw a rectangle and caption.
-                    draw_rectangle(frame, (xmin, ymin, xmax, ymax), (255, 0, 0))
-                    draw_caption(frame, (xmin, ymin, xmax, ymax), caption)
+                    draw_rectangle(im, (xmin, ymin, xmax, ymax), (255, 0, 0))
+                    draw_caption(im, (xmin, ymin, xmax, ymax), caption)
 
                     num_results += 1
 
-            insert_databese(database_path, num_results, frame)
+            insert_databese(database_path, num_results, im)
 
             # cv2.imwrite(
             #     os.path.join(".", "debug", dt_now.strftime("%Y%m%d_%H%M%S") + ".png"),
             #     frame,
             # )
 
-            exec_time = iter.get_next(datetime)
+            exec_time = dt_now + datetime.timedelta(seconds=10)
             print(exec_time, dt_now, num_results)
 
         # Display
